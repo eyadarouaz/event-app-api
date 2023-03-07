@@ -1,3 +1,4 @@
+import { ResetPasswordDto } from './dto/update-password.dto';
 import { Repository } from 'typeorm';
 import { RolesGuard } from './roles.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -6,8 +7,6 @@ import { UserService } from 'src/user/user.service';
 import { ConflictException, HttpException, HttpStatus, Injectable, UnauthorizedException, UseGuards } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { Roles } from 'src/shared/role.decorator';
-import { Role } from 'src/shared/role.enum';
 import { User } from 'src/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -18,8 +17,7 @@ export class AuthService {
         @InjectRepository(User) private usersRepository: Repository<User>) {}
 
 
-    @Roles(Role.ADMIN)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    //Add a new user
     async registerUser(registerDto: RegisterDto) {
         try {
             const userEmailCheck = await this.userService.getUserByEmail(registerDto.email)
@@ -53,14 +51,15 @@ export class AuthService {
         }
     }
 
+    //Validate user and Login
     async validateUser (usernameOrEmail: string, password: string){
         const user = await this.userService.getByUsernameOrEmail(usernameOrEmail)
         if (user) {
             const isMatch = await bcrypt.compare(password, user.password);
             if (isMatch) {
-                const jwtPayload = {user};
-                //await this.usersRepository.update({id:user.id}, {isActive: true});
-                return { access_token: await this.jwtService.sign(jwtPayload),};
+                const jwtPayload = {sub: user.id, username: user.username, role: user.role};
+                await this.usersRepository.update({id:user.id}, {isActive: true});
+                return { access_token: await this.jwtService.sign(jwtPayload)};
             }
         }
         throw new UnauthorizedException('Invalids credentials');
@@ -74,13 +73,14 @@ export class AuthService {
             );
         }
     }
-    async changePassword(id: number, password: string) {
+
+    //Reset password
+    async changePassword(id: number, passwordDto: ResetPasswordDto) {
         const salt = await bcrypt.genSalt(10);
-        const hashPassword = await bcrypt.hash(password, salt);
-        return await this.usersRepository.update({id:id}, {password: hashPassword})
+        const hashPassword = await bcrypt.hash(passwordDto.password, salt);
+        return await this.usersRepository.update({id:id}, {password: hashPassword});
     }
 }
-
 
 
 

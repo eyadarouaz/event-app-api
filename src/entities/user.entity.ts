@@ -37,7 +37,10 @@ export class User {
     enum: Role,
     default: Role.USER,
   })
-  role: Role[];
+  role: Role;
+
+  @Column({nullable: true})
+  profileImage: string;
 
   @Column ({type: 'timestamp', default:() => "CURRENT_TIMESTAMP"})
   createdAt: Date;

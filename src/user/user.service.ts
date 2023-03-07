@@ -1,11 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { RegisterDto } from 'src/auth/dto/register-user.dto';
 import { Role } from 'src/shared/role.enum';
-import { UpdateInfoDto } from './dto/update-user.dto';
-import * as bcrypt from 'bcrypt';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -15,34 +14,55 @@ export class UserService {
 
     //CRUD
     async createUser(registerDto: RegisterDto): Promise<User> {
-        const user = this.usersRepository.create(registerDto);
-        await this.usersRepository.save(user);
-        return user;
+        try{
+            const user = this.usersRepository.create(registerDto);
+            await this.usersRepository.save(user);
+            return user;
+        }catch {
+            throw new HttpException("User was not created", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    async updateInfo(id: number, updateDto: UpdateInfoDto, ) {
-        const toUpdate = await this.getUserById(id);
-        const updated = Object.assign(toUpdate, updateDto);
-        return await this.usersRepository.save(updated);
+    async updateProfile(id: number, updateDto: UpdateProfileDto, ) {
+        try {const toUpdate = await this.getUserById(id);
+            const updatedDate = new Date().toJSON();
+            const updated = Object.assign(toUpdate, updateDto);
+            await this.usersRepository.save(updated);
+            return  await this.usersRepository.update({id:id}, {updatedAt: updatedDate});
+        }catch {
+            throw new HttpException("User was not updated", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+            
     }
 
-    async hashing (password: string){
-        const salt = await bcrypt.genSalt(10);
-        const hashPassword = await bcrypt.hash(password, salt);
-        return hashPassword;
+    async makeAdmin(id: number){
+        try{
+            return await this.usersRepository.update({id:id}, {role: Role.ADMIN});
+        }catch{
+            throw new HttpException("User role was not updated", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async updatePhoto(id: number, fileName: string ){
+        try {
+            const updatedDate = new Date().toJSON();
+            return await this.usersRepository.update({id:id}, {profileImage: fileName, updatedAt: updatedDate});
+        }catch(err) {
+            throw new HttpException("Photo was not updated", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     async deleteUser(id: number) {
-        return await this.usersRepository.delete({id: id});
+        try{
+            return await this.usersRepository.delete({id: id});
+        }catch {
+            throw new HttpException("User was not deleted", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     //Getters
     async getAllUsers() {
         return this.usersRepository.find();
-    }
-
-    getRole(user: User): Role[] {
-        return user.role;
     }
 
     async getUserByEmail(email: string): Promise<User> {
