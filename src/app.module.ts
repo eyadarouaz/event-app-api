@@ -1,32 +1,29 @@
-import { PostModule } from './post/post.module';
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
+import { CommentModule } from './modules/comment/comment.module';
+import { PostModule } from './modules/post/post.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
 import { Module } from '@nestjs/common';
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm/dist';
-import { SnakeNamingStrategy } from './shared/snake-naming.strategy';
-
-
-//for more info : https://typeorm.io/data-source-options
-const ormOptions : TypeOrmModuleOptions = {
-  type: 'mysql',
-  host: 'localhost',
-  port: 3306,
-  username: 'root',
-  password: 'database',
-  database: 'events',
-  namingStrategy: new SnakeNamingStrategy(),
-  autoLoadEntities: true,
-  synchronize: true,
-}
+import { LikeModule } from './modules/like/like.module';
+import { EventModule } from './modules/event/event.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { ConfigModule } from '@nestjs/config';
+import { mailerConfig } from './config/mailer.config';
+import { ormConfig } from './config/mysql.config';
 
 @Module({
   imports: [ 
-    TypeOrmModule.forRoot(ormOptions),
+    ConfigModule.forRoot(),
+    MailerModule.forRoot(mailerConfig),
+    TypeOrmModule.forRoot(ormConfig),
     AuthModule,
     UserModule,
     PostModule,
+    CommentModule,
+    LikeModule,
+    EventModule
   ],
   providers: [],
 })
 export class AppModule {}
+

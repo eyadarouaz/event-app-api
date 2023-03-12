@@ -2,32 +2,39 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { JwtAuthGuard } from './../auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Controller, Post, Request } from "@nestjs/common";
-import { Body, Get, Param, Put, UseGuards } from "@nestjs/common/decorators";
+import { Body, Delete, Get, Param, Put, UseGuards, UseInterceptors } from "@nestjs/common/decorators";
 import { PostService } from "./post.service";
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/modules/user/user.service';
+import { ResponseInterceptor } from 'src/shared/interceptors/response.interceptor';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('post')
+@UseGuards(JwtAuthGuard)
 @Controller('post')
 export class PostController {
     constructor(private readonly postService: PostService,
         private readonly userService: UserService) {}
 
-    @UseGuards(JwtAuthGuard)
     @Get('all')
     async getPosts() {
         return this.postService.getAllPosts();
     }
 
-    @UseGuards(JwtAuthGuard)
     @Post()
     async createPost(@Request() req, @Body() createDto: CreatePostDto) {
-        const user = await this.userService.getUserById(req.sub);
+        const user = await this.userService.getUserById(req.user.id);
+        console.log(user);
         return this.postService.createPost(user, createDto);
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Put('update/:id')
+    @Put(':id')
     async updatePost(@Request() req, @Param('id') id: number, @Body() updateDto: UpdatePostDto ) {
-        return this.postService.updatePost(req.user, id, updateDto);
+       return this.postService.updatePost(req.user, id, updateDto);
+    }
+    
+    @Delete(':id')
+    async deletePost(@Request() req, @Param('id') id: number) {
+        return this.postService.deletePost(req.user, id);
     }
 
 }

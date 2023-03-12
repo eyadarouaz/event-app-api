@@ -1,8 +1,12 @@
-import { Role } from 'src/shared/role.enum';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, ManyToOne, OneToMany} from 'typeorm';
+import { Status } from './../shared/enums/status.enum';
+import { Role } from 'src/shared/enums/role.enum';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, ManyToOne, OneToMany, UpdateDateColumn, CreateDateColumn} from 'typeorm';
+import { Like } from './like.entity';
 import { Post } from './post.entity';
+import { Comment } from './comment.entity';
+import { Exclude } from '@nestjs/class-transformer';
 
-@Entity('users')
+@Entity({name: 'users'})
 export class User {
 
   @PrimaryGeneratedColumn()
@@ -15,12 +19,13 @@ export class User {
   email: string;
   
   @Column()
+  @Exclude({toPlainOnly: true})
   password: string;
 
-  @Column({default: null})
+  @Column({name: 'first_name', nullable: true})
   firstName: string;
 
-  @Column({default: null})
+  @Column({name: 'last_name', nullable: true})
   lastName: string;
 
   @Column({default: null})
@@ -29,8 +34,12 @@ export class User {
   @Column({default: null})
   mobile: number;
 
-  @Column({default: false})
-  isActive: boolean;
+  @Column({
+    type: "enum",
+    enum: Status,
+    default: Status.OFFLINE,
+  })
+  status: boolean;
 
   @Column({
     type: "enum",
@@ -39,18 +48,35 @@ export class User {
   })
   role: Role;
 
-  @Column({nullable: true})
+  @Column({name:'profile_image', nullable: true})
   profileImage: string;
 
-  @Column ({type: 'timestamp', default:() => "CURRENT_TIMESTAMP"})
+  @Column({name: 'reset_token', nullable: true})
+  resetToken: string;
+
+  @CreateDateColumn ({name: 'created_at', type: 'timestamp'})
   createdAt: Date;
 
-  @Column ({type: 'timestamp', default:() => "CURRENT_TIMESTAMP"})
+  @UpdateDateColumn ({name: 'updated_at', type: 'timestamp'})
   updatedAt: Date;
-
+ 
   //Relations
-  
-  @OneToMany(() => Post, (post: Post) => post.author)
+  //One use has Many posts
+  @OneToMany(() => Post, (post: Post) => post.user)
   posts: Post[];
+
+  //One user has many likes
+  @OneToMany(
+    () => Like,
+    (like: Like) => like.user,
+    { onUpdate: 'CASCADE', onDelete: 'CASCADE' },
+  )
+  likes: Like[];
+
+  @OneToMany(
+    type => Comment, (comment: Comment) => comment.user,
+    { onUpdate: 'CASCADE', onDelete: 'CASCADE' }
+  )
+  comments: Comment[];
   
 }

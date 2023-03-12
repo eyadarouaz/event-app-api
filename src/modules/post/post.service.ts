@@ -2,7 +2,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { User } from 'src/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { HttpException, HttpStatus, Injectable, NotFoundException} from "@nestjs/common";
+import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException} from "@nestjs/common";
 import { Repository } from 'typeorm';
 import { Post } from 'src/entities/post.entity';
 
@@ -10,33 +10,31 @@ import { Post } from 'src/entities/post.entity';
 export class PostService {
     constructor( @InjectRepository(Post) private postsRepository: Repository<Post>) {}
 
-    //CRUD
+    
     async createPost( user: User, postDto: CreatePostDto) {
         try {
-            const post = await this.postsRepository.create({...postDto, author: user });
+            const post = await this.postsRepository.create({...postDto, user: user });
             await this.postsRepository.save(post);
             return post;
         }catch(err) {
-            throw new HttpException("Post was not created", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-    
-    async updatePost(user:User, id: number, updateDto: UpdatePostDto) {
-        try {
-            const toUpdate = await this.postsRepository.findOne({relations: {author: true}, where: {author: {id: user.id}, id:id}});
-            const updated = Object.assign(toUpdate, updateDto);
-            return await this.postsRepository.save(updated); 
-        }catch(err) {
-            throw new HttpException("Post was not updated", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException("Cannot create post", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    async deletePost(id: number) {
-        try {
-            return await this.postsRepository.delete({id: id});
-        }catch(err) {
-            throw new HttpException("Post was not deleted", HttpStatus.INTERNAL_SERVER_ERROR);
+    async updatePost(user:User, id: number, updateDto: UpdatePostDto) {
+        const toUpdate = await this.postsRepository.findOne({relations: {user: true}, where: {user: user, id:id}});
+        if(toUpdate) {
+            return await this.postsRepository.update({id:id, user:user}, {...updateDto});
         }
+        throw new ForbiddenException("Cannot update post");
+    }
+
+    async deletePost(user: User, id: number) {
+        const toDelete = await this.postsRepository.findOne({relations: {user: true}, where: {user: user, id:id}});
+        if (toDelete){
+            return await this.postsRepository.delete(id);
+        }
+        throw new ForbiddenException("Cannot delete post");
     }
 
     //Getters
@@ -52,9 +50,9 @@ export class PostService {
         }
     }
 
-    async getPostByAuthor(user: User){
+    async getPostByUser(user: User){
         try {
-            return this.postsRepository.find({relations: {author: true}, where: {author: {id: user.id}}});
+            return this.postsRepository.find({relations: {user: true}, where: {user: {id: user.id}}});
         } catch (err) {
             throw new NotFoundException('No posts found');
         }
