@@ -58,7 +58,7 @@ export class UserController {
   @UseInterceptors(FileInterceptor('image', { dest: "src/uploads/profile-pics" }))
   async uploadFile(@Request() req, @UploadedFile() file: Express.Multer.File) {
     console.log(file);
-    return this.userService.updatePhoto(req.user.id, file.filename);
+    //return this.userService.updatePhoto(req.user.id, file.filename);
   }
 
   @Get('my-profile')

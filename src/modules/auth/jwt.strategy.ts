@@ -1,30 +1,19 @@
-import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { Controller, Get, Post, Body, Request, Put, Param } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { PassportStrategy } from '@nestjs/passport';
+import { Injectable } from '@nestjs/common';
+import { jwtConstant } from 'src/shared/constants';
 
-@ApiTags('auth')
-@Controller()
-export class AuthController {
-  constructor(private readonly authService: AuthService,) {}
-
-  @Post('forgot')
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(forgotPasswordDto);
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: jwtConstant.secret,
+    });
   }
 
-  @Put()
-  async resetPassword(@Request() req, @Body('password') password: string) {
-    const token = await req.params.token;
-    return this.authService.resetPassword(token, token.id, password);
+  async validate(payload: any) {
+    return { id: payload.sub, username: payload.username, role: payload.role };
   }
-
-  @Post('login')
-  login (@Body() loginDto: LoginDto ) {
-    return this.authService.login(loginDto);
-  }
-  
 }
