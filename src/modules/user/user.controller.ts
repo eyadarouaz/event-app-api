@@ -1,8 +1,9 @@
+import { AdminGuard } from './../../shared/guards/admin.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from './../auth/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from './../auth/roles.guard';
-import { Body, Controller, Delete, Get, Param, Put, UseGuards, Request, Post, UseInterceptors, UploadedFile, StreamableFile, Res, ClassSerializerInterceptor } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Put, UseGuards, Request, Post, UseInterceptors, UploadedFile, StreamableFile, Res, ClassSerializerInterceptor, ValidationPipe, ForbiddenException } from "@nestjs/common";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { UserService } from "./user.service";
 import { Roles } from 'src/shared/role.decorator';
@@ -23,29 +24,33 @@ export class UserController {
   
   constructor(private readonly userService: UserService) {}
 
+  @UseInterceptors(AdminGuard)
   @Post('register')
   async register (@Body() registerDto : RegisterDto ){
     return this.userService.createUser(registerDto);
   }
 
+  @UseInterceptors(AdminGuard)
   @Put('update/:id')
   async updateUser(@Param('id') id: number, @Body() updateDto: UpdateUserDto) {
     return this.userService.updateUser(id, updateDto);
+  }
+
+  @UseInterceptors(AdminGuard)
+  @Delete(':id')
+  async deleteUser (@Param('id') id: number) {
+    return this.userService.deleteUser(id);
   }
 
   @Put('change-pwd')
   async updatePassword(@Request() req , @Body() passwordDto: UpdatePasswordDto) {
     return this.userService.changePassword(req.user.id, passwordDto);
   }
-
-  @Delete(':id')
-  async deleteUser (@Param('id') id: number) {
-    return this.userService.deleteUser(id);
-  }
-
+  
   @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(AdminGuard)
   @Get('all')
-  async getUsers(){
+  async getUsers(@Request() req){
     return this.userService.getAllUsers();
   }
 
@@ -58,12 +63,11 @@ export class UserController {
   @UseInterceptors(FileInterceptor('image', { dest: "src/uploads/profile-pics" }))
   async uploadFile(@Request() req, @UploadedFile() file: Express.Multer.File) {
     console.log(file);
-    //return this.userService.updatePhoto(req.user.id, file.filename);
+    return this.userService.updatePhoto(req.user.id, file.filename);
   }
 
   @Get('my-profile')
   async getMyProfile(@Request() req) {
-    console.log(req);
     return this.userService.getProfile(req.user.id);
   }
 
@@ -74,19 +78,22 @@ export class UserController {
   }
 
   @Get('profile-photo/:id')
-  async getUserProfilePhoto(@Param('id') id: number, @Res({ passthrough: true }) res: Response) :Promise<StreamableFile> {
+  async getUserProfilePhoto(@Param('id') id: number, @Res({ passthrough: true }) res: Response) {
     res.set({'Content-Type': 'image/jpeg'});
     const user =  await this.userService.getUserById(id);
     const profilePhoto = user.profileImage;
+    console.log(join(process.cwd(),'src/uploads/profile-pics/' + profilePhoto));
+    //return res.sendFile(join(process.cwd(), 'src/uploads/profile-pics/' + profilePhoto));
     return new StreamableFile(createReadStream(join(process.cwd(), 'src/uploads/profile-pics', profilePhoto)));
   }
 
   @Get('my-profile-photo')
-  async getMyProfilePhoto(@Request() req, @Res({ passthrough: true }) res: Response) :Promise<StreamableFile> {
+  async getMyProfilePhoto(@Request() req, @Res({ passthrough: true }) res: Response) /*:Promise<StreamableFile>*/ {
     res.set({'Content-Type': 'image/jpeg'});
     const user =  await this.userService.getUserById(req.user.id);
     const profilePhoto = user.profileImage;
-    return new StreamableFile(createReadStream(join(process.cwd(), 'src/uploads/profile-pics', profilePhoto)));
+    //return res.sendFile(join(process.cwd()), 'src/uploads/profile-pics/' + profilePhoto);
+    //return new StreamableFile(createReadStream(join(process.cwd(), 'src/uploads/profile-pics/', profilePhoto)));
   }
 
 }
