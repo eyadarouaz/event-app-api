@@ -1,7 +1,7 @@
 import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from './../auth/jwt-auth.guard';
 import { CreateEventDto } from './dto/create-event.dto';
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Request } from '@nestjs/common';
 import { EventService } from './event.service';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from 'src/shared/guards/admin.guard';
@@ -30,12 +30,20 @@ export class EventController {
     return this.eventService.deleteEvent(id);
   }
 
-  @Get(':date')
-  async getAllEvents(@Param('date') date: Date) {
+  @Get('date')
+  async getByDate(@Body('date') date: Date) {
     return this.eventService.getEventByDate(date);
   }
 
+  @Post('register/:eventId')
+  async eventRegister(@Param('eventId') id, @Request() req) {
+    return this.eventService.eventRegister(id, req.user.id);
+  }
 
+  @Get('registrations/:id')
+  async getRegistrationsByEvent(@Param('id') id) {
+    return this.eventService.getRegistrationsByEvent(id);
+  }
 
 
 }

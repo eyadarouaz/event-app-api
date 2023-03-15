@@ -1,4 +1,6 @@
-import { BeforeInsert, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Transform } from "class-transformer";
+import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Registration } from "./event-registration.entity";
 
 @Entity('events')
 export class Event {
@@ -11,7 +13,7 @@ export class Event {
 
     @Column()
     description: string;
-    
+
     @Column()
     date: Date;
 
@@ -23,5 +25,13 @@ export class Event {
 
     @UpdateDateColumn ({name: 'updated_at', type: 'timestamp'})
     updatedAt: Date;
+
+    //Relations
+    @OneToMany(
+        type => Registration,
+        (registration: Registration) => registration.event,
+        // {onDelete: 'CASCADE' },
+        )
+    registrations: Registration[];
     
 }

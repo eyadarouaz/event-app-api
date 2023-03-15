@@ -5,6 +5,7 @@ import { Like } from './like.entity';
 import { Post } from './post.entity';
 import { Comment } from './comment.entity';
 import { Exclude } from '@nestjs/class-transformer';
+import { Registration } from './event-registration.entity';
 
 @Entity({name: 'users'})
 export class User {
@@ -28,10 +29,10 @@ export class User {
   @Column({name: 'last_name', nullable: true})
   lastName: string;
 
-  @Column({default: null})
+  @Column({nullable: true})
   birthday: Date;
 
-  @Column({default: null})
+  @Column({nullable: true})
   mobile: number;
 
   @Column({
@@ -61,11 +62,10 @@ export class User {
   updatedAt: Date;
  
   //Relations
-  //One use has Many posts
+  
   @OneToMany(() => Post, (post: Post) => post.user)
   posts: Post[];
 
-  //One user has many likes
   @OneToMany(
     () => Like,
     (like: Like) => like.user,
@@ -78,5 +78,12 @@ export class User {
     { onUpdate: 'CASCADE', onDelete: 'CASCADE' }
   )
   comments: Comment[];
+
+  @OneToMany(
+    () => Registration,
+    (registration: Registration) => registration.user,
+    { onDelete: 'CASCADE' },
+  )
+  registrations: Like[];
   
 }

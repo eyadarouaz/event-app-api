@@ -1,13 +1,15 @@
 import { CreateEventDto } from './dto/create-event.dto';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from 'src/entities/event.entity';
 import { Repository } from 'typeorm';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { Registration } from 'src/entities/event-registration.entity';
 
 @Injectable()
 export class EventService {
-    constructor (@InjectRepository(Event) private eventsRepository: Repository<Event>){}
+    constructor (@InjectRepository(Event) private eventsRepository: Repository<Event>,
+    @InjectRepository(Registration) private registrationsRepository: Repository<Registration>){}
 
     async createEvent(eventDto: CreateEventDto){
         try{
@@ -35,6 +37,17 @@ export class EventService {
          }
     }
 
+    async eventRegister(eventId: number, userId: number) {
+        const event = await this.getEventById(eventId);
+        if (event) {
+            const isRegistered = await this.getRegistration(userId, eventId);
+            if(!isRegistered){
+                const reg = await this.registrationsRepository.create({user:{id:userId}, event:{id:eventId}})
+                return this.registrationsRepository.save(reg);
+            }throw new ConflictException('User already registered');
+        } 
+    }
+
 
     //Getters
     async getEvents() {
@@ -49,4 +62,15 @@ export class EventService {
         return this.eventsRepository.findBy({date:date});
     }
 
+    async getRegistrationsByEvent(eventId) {
+        const event = await this.getEventById(eventId);
+        if(!event) {
+            throw new NotFoundException(`Event with id ${eventId} does not exist`);
+        }
+        return this.registrationsRepository.findAndCount({relations: {event: true, user:true}, where: {event: {id: eventId}}});
+    }
+
+    async getRegistration(userId, eventId) {
+        return this.registrationsRepository.findOne({relations:{user:true, event:true}, where: {user: {id: userId}, event: {id: eventId}}});
+    }
 }
