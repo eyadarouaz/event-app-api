@@ -1,3 +1,4 @@
+import { DateRangeDto } from './dto/date-range.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from './../auth/jwt-auth.guard';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -31,8 +32,8 @@ export class EventController {
   }
 
   @Get('date')
-  async getByDate(@Body('date') date: Date) {
-    return this.eventService.getEventByDate(date);
+  async getByDate(@Body() dateRangeDto: DateRangeDto) {
+    return this.eventService.getEventByDate(dateRangeDto);
   }
 
   @Post('register/:eventId')

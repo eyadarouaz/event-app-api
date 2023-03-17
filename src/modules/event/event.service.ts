@@ -2,9 +2,10 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { HttpException, HttpStatus, Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from 'src/entities/event.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Registration } from 'src/entities/event-registration.entity';
+import { DateRangeDto } from './dto/date-range.dto';
 
 @Injectable()
 export class EventService {
@@ -13,28 +14,28 @@ export class EventService {
 
     async createEvent(eventDto: CreateEventDto){
         try{
-            const event = this.eventsRepository.create({...eventDto});
+          const event = this.eventsRepository.create({...eventDto});
             await this.eventsRepository.save(event);
             return event;  
-        }catch {
-            throw new HttpException("Event was not created", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        }catch(error) {
+            throw new HttpException(error.message,HttpStatus.INTERNAL_SERVER_ERROR,);
+        }       
     }
 
     async updateEvent(eventDto: UpdateEventDto, id: number){
         try{
             return await this.eventsRepository.update({id:id}, {...eventDto});
-        }catch {
-            throw new HttpException("Event was not created", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        }catch(error) {
+            throw new HttpException(error.message,HttpStatus.INTERNAL_SERVER_ERROR,);
+        }  
     }
 
     async deleteEvent(id: number) {
         try{
             return this.eventsRepository.delete({id: id});
-         }catch {
-             throw new HttpException("Event was not created", HttpStatus.INTERNAL_SERVER_ERROR);
-         }
+        }catch(error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     async eventRegister(eventId: number, userId: number) {
@@ -58,8 +59,8 @@ export class EventService {
         return this.eventsRepository.findOneBy({id:id});
     }
 
-    async getEventByDate(date: Date) {
-        return this.eventsRepository.findBy({date:date});
+    async getEventByDate(dateRangeDto: DateRangeDto) {
+        return this.eventsRepository.find({where: {date: Between(dateRangeDto.fromDate, dateRangeDto.toDate)}});
     }
 
     async getRegistrationsByEvent(eventId) {
@@ -67,7 +68,8 @@ export class EventService {
         if(!event) {
             throw new NotFoundException(`Event with id ${eventId} does not exist`);
         }
-        return this.registrationsRepository.findAndCount({relations: {event: true, user:true}, where: {event: {id: eventId}}});
+        return this.registrationsRepository.find({relations: {event: true, user:true}, where: {event: {id: eventId}}});
+
     }
 
     async getRegistration(userId, eventId) {
