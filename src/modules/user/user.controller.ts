@@ -1,13 +1,9 @@
 import { AdminGuard } from './../../shared/guards/admin.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from './../auth/jwt-auth.guard';
-import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from './../auth/roles.guard';
 import { Body, Controller, Delete, Get, Param, Put, UseGuards, Request, Post, UseInterceptors, UploadedFile, StreamableFile, Res, ClassSerializerInterceptor, ValidationPipe, ForbiddenException } from "@nestjs/common";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { UserService } from "./user.service";
-import { Roles } from 'src/shared/role.decorator';
-import { Role } from 'src/shared/enums/role.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { createReadStream } from 'graceful-fs';
 import { join } from 'path';
@@ -24,19 +20,19 @@ export class UserController {
   
   constructor(private readonly userService: UserService) {}
 
-  @UseInterceptors(AdminGuard)
+  @UseGuards(AdminGuard)
   @Post('register')
   async register (@Body() registerDto : RegisterDto ){
     return this.userService.createUser(registerDto);
   }
 
-  @UseInterceptors(AdminGuard)
+  @UseGuards(AdminGuard)
   @Put('update/:id')
   async updateUser(@Param('id') id: number, @Body() updateDto: UpdateUserDto) {
     return this.userService.updateUser(id, updateDto);
   }
 
-  @UseInterceptors(AdminGuard)
+  @UseGuards(AdminGuard)
   @Delete(':id')
   async deleteUser (@Param('id') id: number) {
     return this.userService.deleteUser(id);

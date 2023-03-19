@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "@nestjs/class-validator";
+import { IsNotEmpty, MinLength } from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdatePasswordDto {
@@ -9,5 +9,6 @@ export class UpdatePasswordDto {
 
     @ApiProperty()
     @IsNotEmpty()
+    @MinLength(7)
     newPassword: string;
 }
