@@ -1,3 +1,4 @@
+import { SurveyModule } from './modules/survey/survey.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { PostModule } from './modules/post/post.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -21,7 +22,8 @@ import { ormConfig } from './config/mysql.config';
     PostModule,
     CommentModule,
     LikeModule,
-    EventModule
+    EventModule,
+    SurveyModule,
   ],
   providers: [],
 })
