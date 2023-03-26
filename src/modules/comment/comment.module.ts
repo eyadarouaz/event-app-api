@@ -1,4 +1,4 @@
-import { JwtAuthGuard } from './../auth/jwt-auth.guard';
+import { PassportModule } from '@nestjs/passport';
 import { PostModule } from './../post/post.module';
 import { UserModule } from './../user/user.module';
 import { PostService } from './../post/post.service';
@@ -14,9 +14,10 @@ import { Post } from 'src/entities/post.entity';
 @Module({
     imports: [TypeOrmModule.forFeature([User, Post, Comment]),
     UserModule,
+    PassportModule.register({defaultStrategy: 'jwt'}),
     PostModule],
     controllers: [CommentController],
-    providers: [CommentService, JwtAuthGuard]
+    providers: [CommentService]
 }
 )
 export class CommentModule {}

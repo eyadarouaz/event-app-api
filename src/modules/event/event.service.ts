@@ -10,7 +10,7 @@ import { DateRangeDto } from './dto/date-range.dto';
 @Injectable()
 export class EventService {
     constructor (@InjectRepository(Event) private eventsRepository: Repository<Event>,
-    @InjectRepository(Registration) private registrationsRepository: Repository<Registration>){}
+                 @InjectRepository(Registration) private registrationsRepository: Repository<Registration>){}
 
     async createEvent(eventDto: CreateEventDto){
         try{

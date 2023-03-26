@@ -1,6 +1,7 @@
+import { SurveyResponse } from './survey-response.entity';
 import { Status } from './../shared/enums/status.enum';
 import { Role } from 'src/shared/enums/role.enum';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, ManyToOne, OneToMany, UpdateDateColumn, CreateDateColumn} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, ManyToOne, OneToMany, UpdateDateColumn, CreateDateColumn, OneToOne, JoinColumn} from 'typeorm';
 import { Like } from './like.entity';
 import { Post } from './post.entity';
 import { Comment } from './comment.entity';

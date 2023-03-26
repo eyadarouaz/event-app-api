@@ -7,7 +7,6 @@ import { PostService } from './post.service';
 import { PostController } from './post.controller';
 import { Post } from 'src/entities/post.entity';
 import { PassportModule } from '@nestjs/passport';
-import { RolesGuard } from 'src/modules/auth/roles.guard';
 
 
 @Module({
@@ -17,7 +16,7 @@ import { RolesGuard } from 'src/modules/auth/roles.guard';
   }),
   UserModule],
   controllers: [PostController],
-  providers: [PostService, JwtStrategy, RolesGuard],
+  providers: [PostService, JwtStrategy],
   exports: [PostService]
 })
 export class PostModule {}

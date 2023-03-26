@@ -1,12 +1,12 @@
+import { AuthGuard } from '@nestjs/passport';
 import { LikeService } from './like.service';
 import { Controller, Post, UseGuards, Request, Param, Delete, UseInterceptors, Get } from "@nestjs/common";
-import { JwtAuthGuard } from "src/modules/auth/jwt-auth.guard";
 import { UserService } from "src/modules/user/user.service";
 import { ResponseInterceptor } from 'src/shared/interceptors/response.interceptor';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('like')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard())
 @Controller()
 export class LikeController {
 

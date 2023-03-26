@@ -1,3 +1,4 @@
+import { PassportModule } from '@nestjs/passport';
 import { UserModule } from './../user/user.module';
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -9,6 +10,7 @@ import { PostModule } from 'src/modules/post/post.module';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Like]),
+    PassportModule.register({defaultStrategy: 'jwt'}),
     UserModule,
     PostModule],
     controllers: [LikeController],

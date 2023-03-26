@@ -1,6 +1,5 @@
+import { AdminStrategy } from './admin.strategy';
 import { ConfigModule } from '@nestjs/config';
-import { RolesGuard } from './roles.guard';
-import { JwtAuthGuard } from './jwt-auth.guard';
 import { UserModule } from '../user/user.module';
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -16,18 +15,19 @@ import { PassportModule } from '@nestjs/passport';
     TypeOrmModule.forFeature([User]),
     JwtModule.register({
       secret: jwtConstant.secret,
-      signOptions: { 
-        algorithm:'HS512',
-        expiresIn: '1h' }
+      signOptions: {
+        algorithm: 'HS512',
+        expiresIn: '1h'
+      }
     }),
     PassportModule.register({
-      defaultStrategy :'jwt',
+      defaultStrategy: 'jwt',
     }),
     UserModule,
     ConfigModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard, RolesGuard],
+  providers: [AuthService, AdminStrategy],
   exports: [PassportModule]
 })
-export class AuthModule {}
+export class AuthModule { }

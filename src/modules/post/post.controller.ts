@@ -1,15 +1,14 @@
+import { AuthGuard } from '@nestjs/passport';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { JwtAuthGuard } from './../auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Controller, Post, Request } from "@nestjs/common";
 import { Body, Delete, Get, Param, Put, UseGuards, UseInterceptors } from "@nestjs/common/decorators";
 import { PostService } from "./post.service";
 import { UserService } from 'src/modules/user/user.service';
-import { ResponseInterceptor } from 'src/shared/interceptors/response.interceptor';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('post')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard())
 @Controller('post')
 export class PostController {
     constructor(private readonly postService: PostService,

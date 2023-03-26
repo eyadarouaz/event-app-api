@@ -41,7 +41,7 @@ export class LikeService {
             throw new NotFoundException(`Post with id ${postId} does not exist`);
         }
         //Return likes + number of likes
-        return this.likesRepository.findAndCount({relations: {post: true}, where: {post: {id: postId}}});
+        return this.likesRepository.findAndCount({where: {post: {id: postId}}});
     }
         
     async getLike(userId: number, postId:number) {
