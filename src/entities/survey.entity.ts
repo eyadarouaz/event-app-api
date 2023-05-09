@@ -1,14 +1,12 @@
 import { SurveyOption } from './survey-option.entity';
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { SurveyResponse } from './survey-response.entity';
 
 @Entity('surveys')
 export class Survey {
 
     @PrimaryGeneratedColumn()
     id: number;
-
-    @Column()
-    title: string;
 
     @Column()
     question: string
@@ -22,11 +20,11 @@ export class Survey {
     @UpdateDateColumn({name: 'updated_at', type: 'timestamp'})
     updatedAt: Date;
 
-    @OneToMany(() => SurveyOption,
+    @OneToMany(
+        () => SurveyOption,
         (option: SurveyOption) => option.survey,
         // {onDelete: 'CASCADE' },
-        )
+    )
     options: SurveyOption[];
-
-
+    
 }
