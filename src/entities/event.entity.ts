@@ -1,6 +1,7 @@
 import { Transform } from "class-transformer";
 import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Registration } from "./event-registration.entity";
+import { EventStatus } from "src/shared/enums/event-status";
 
 @Entity('events')
 export class Event {
@@ -14,12 +15,25 @@ export class Event {
     @Column()
     description: string;
 
+    @Column({nullable: true})
+    image: string;
+
     @Column()
-    date: Date;
+    startDate: Date;
+
+    @Column()
+    endDate: Date;
 
     @Column()
     location: string;
     
+    @Column({
+        type: "enum",
+        enum: EventStatus,
+        default: EventStatus.SCHEDULED,
+      })
+    status: string;
+
     @CreateDateColumn ({name: 'created_at', type: 'timestamp'})
     createdAt: Date;
 
