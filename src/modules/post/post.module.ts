@@ -1,6 +1,5 @@
 import { JwtStrategy } from 'src/modules/auth/jwt.strategy';
 import { UserModule } from './../user/user.module';
-import { UserService } from 'src/modules/user/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 import { PostService } from './post.service';

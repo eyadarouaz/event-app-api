@@ -1,10 +1,10 @@
 import { PostService } from 'src/modules/post/post.service';
-import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like } from "src/entities/like.entity";
 import { User } from "src/entities/user.entity";
 import { Repository } from "typeorm";
-import { Post } from 'src/entities/post.entity';
+
 
 @Injectable()
 export class LikeService {
@@ -41,11 +41,20 @@ export class LikeService {
             throw new NotFoundException(`Post with id ${postId} does not exist`);
         }
         //Return likes + number of likes
-        return this.likesRepository.findAndCount({where: {post: {id: postId}}});
+        return this.likesRepository.findAndCount({
+            where: {
+                post: {id: postId}
+            }
+        });
     }
         
     async getLike(userId: number, postId:number) {
-        return await this.likesRepository.findOne({relations:{user:true, post:true}, where: {user: {id: userId}, post: {id: postId}}});
+        return await this.likesRepository.findOne({
+            relations:{user:true, post:true}, 
+            where: {
+                user: {id: userId}, post: {id: postId}
+            }
+        });
     }
 
 }

@@ -19,12 +19,12 @@ export class AdminStrategy extends PassportStrategy( Strategy, strategies.admin 
 
   async validate(payload: any) {
     // Find user by id | email | etc
-    const user  = this.userService.getUserById(payload.id);
+    const user  = this.userService.getUserById(payload.user.id);
     if (!user) {
       throw new UnauthorizedException();
     } 
     else {
-      if (payload.role != "Admin") {throw new ForbiddenException();}
+      if (payload.user.role != "Admin") {throw new ForbiddenException();}
     }
     return user;
   }

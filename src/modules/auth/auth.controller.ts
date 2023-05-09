@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Request, Put, Param } from '@nestjs/common';
+import { Controller, Post, Body, Request, Put, Query, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -13,19 +13,18 @@ export class AuthController {
     return this.authService.forgotPassword(email);
   }
 
-  @Put()
-  async resetPassword(@Request() req, @Body('password') password: string) {
-    const token = await req.params.token;
-    return this.authService.resetPassword(token, token.id, password);
+  @Put('reset-password')
+  async resetPassword(@Query() query ,@Body('password') password: string, @Request() req) {
+    return this.authService.resetPassword(query.token, query.verifCode, password);
   }
 
   @Post('login')
-  login (@Body() loginDto: LoginDto ) {
+  login (@Body(new ValidationPipe()) loginDto: LoginDto,) {
     return this.authService.login(loginDto);
   }
 
   @Post('verify-token')
-  verifyToken(@Body('token') token) {
+  verifyToken(@Body('token') token: string) {
     return this.authService.verifyToken(token);
   }
   

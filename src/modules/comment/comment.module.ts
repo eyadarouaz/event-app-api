@@ -1,8 +1,6 @@
 import { PassportModule } from '@nestjs/passport';
 import { PostModule } from './../post/post.module';
 import { UserModule } from './../user/user.module';
-import { PostService } from './../post/post.service';
-import { UserService } from 'src/modules/user/user.service';
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Comment } from "src/entities/comment.entity";

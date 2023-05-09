@@ -1,5 +1,5 @@
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -8,6 +8,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import * as bcrypt from 'bcrypt';
 import { salt } from 'src/shared/constants';
 import { UpdateUserDto } from './dto/update-user.dto';
+
 
 @Injectable()
 export class UserService {
@@ -53,28 +54,37 @@ export class UserService {
                 `User with username: '${updateDto.username}' already exists`,
             );
         }
-        return await this.usersRepository.update({id:id}, {...updateDto}); 
+        if(updateDto.password) {
+            const hashPassword = await bcrypt.hash(updateDto.password, salt);
+            return await this.usersRepository.update({id:id}, {...updateDto, password: hashPassword}); 
+        }else {
+            const user = await this.getUserById(id);
+            return await this.usersRepository.update({id:id}, {...updateDto, password: user.password}); 
+        }
     }
 
     //Update profile (firstName?,lastName?,mobile?..)
     async updateProfile(id: number, updateDto: UpdateProfileDto, ) {
         try {
             return await this.usersRepository.update({id:id}, {...updateDto});
-        }catch {
-            throw new HttpException("User was not updated", HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(err) {
+            throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
             
     }
 
-   //Change password
-    async changePassword(id: number, passwordDto: UpdatePasswordDto) {
+    async verifyPassword(id: number, password: string) {
         const user = await this.getUserById(id);
         if(user){
-            const isMatch = await bcrypt.compare(passwordDto.currentPassword, user.password);
-            if(isMatch) {
-                const hashPassword = await bcrypt.hash(passwordDto.newPassword, salt);
-                return await this.usersRepository.update({id:id}, {password: hashPassword});
-            }
+            return bcrypt.compare(password, user.password);
+        }
+    }
+
+   //Change password
+    async changePassword(id: number, passwordDto: UpdatePasswordDto) {
+        if(await this.verifyPassword(id, passwordDto.currentPassword)) {
+            const hashPassword = await bcrypt.hash(passwordDto.newPassword, salt);
+            return await this.usersRepository.update({id:id}, {password: hashPassword});
         }
         throw new UnauthorizedException('Incorrect password');
     }
@@ -98,7 +108,8 @@ export class UserService {
 
     //Getters
     async getAllUsers() {
-        return this.usersRepository.find();
+        const [list, count] = await this.usersRepository.findAndCount();
+        return {list, count}
     }
 
     async getUserByEmail(email: string): Promise<User> {
@@ -107,6 +118,7 @@ export class UserService {
 
     async getUserByUsername(username: string): Promise<User> {
         return await this.usersRepository.findOne({ where: { username: username } });
+       
     }
 
     async getByUsernameOrEmail(usernameOrEmail: string) {
@@ -119,8 +131,16 @@ export class UserService {
 
     async getProfile (id: number) {
         const profile = await this.usersRepository.findOneBy({id: id});
-        return {firstName: profile.firstName, lastName: profile.lastName, 
-            email: profile.email, mobile: profile.mobile, birthday: profile.birthday}
+        return {
+            id: profile.id,
+            username: profile.username,
+            firstName: profile.firstName, 
+            lastName: profile.lastName, 
+            email: profile.email, 
+            mobile: profile.mobile, 
+            birthday: profile.birthday,
+            role: profile.role
+        }
     }
     
     async getUserById(id: number): Promise<User> {

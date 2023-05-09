@@ -1,7 +1,8 @@
+import { ForbiddenException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/modules/user/user.service';
-import { BadRequestException, ConflictException, Get, HttpException, HttpStatus, Injectable, Param, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, UnauthorizedException} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/entities/user.entity';
@@ -9,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MailerService } from '@nestjs-modules/mailer/dist';
 import { ConfigService } from '@nestjs/config';
 import { salt, jwtConstant } from 'src/shared/constants';
+import * as random from 'random-string-generator';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +27,7 @@ export class AuthService {
         if (user) {
             const isMatch = await bcrypt.compare(loginDto.password, user.password);
             if (isMatch) {
-                const jwtPayload = {id: user.id, username: user.username, role: user.role};
+                const jwtPayload = {user};
                 return { access_token: await this.jwtService.sign(jwtPayload)};
             }
         }
@@ -33,7 +35,8 @@ export class AuthService {
     }
 
     async verifyToken(token: string) {
-        return this.jwtService.verify(token);
+        const payload = await this.jwtService.verify(token, {secret: jwtConstant.secret});
+        return payload;
     }
     
     async forgotPassword(email: string){
@@ -46,9 +49,12 @@ export class AuthService {
             //Generate reset token
             const payload = {id: user.id};
             const token = await this.jwtService.sign(payload, {expiresIn: "300s"});
+            const verifCode = random('lowernumeric');
+            await this.usersRepository.update({id: payload.id}, {resetCode: verifCode});
+            // Send link with the reset token to email
+            const forgotLink = `${this.configService.get('CLIENT_APP_URL')}
+            /reset-password?verifycode=${verifCode}&token=${token}`;
 
-            //Send link with the reset token to email
-            const forgotLink = `${this.configService.get('CLIENT_APP_URL')}/reset-password?token=${token}`;
             await this.mailerService.sendMail({
                 from: this.configService.get<string>('MAIL_SENDER'),
                 to: user.email,
@@ -58,20 +64,30 @@ export class AuthService {
                     <p>Please use this <a href="${forgotLink}">link</a> to reset your password.</p>
                 `,
             });
+            return {token: token, verif_code: verifCode};
         }catch(error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
     }
 
-    async resetPassword(token: string, id: number, password: string) {
-        //Check if reset token is valid
+    async resetPassword(token: string, verifCode: string, password: string) {
         const payload = await this.jwtService.verify(token, {secret: jwtConstant.secret});
-        if(!payload) {
-            throw new BadRequestException('Password reset token expired');
+        if(payload) {
+            const user = await this.usersRepository.findOne({
+                where: {
+                    id:payload.id, resetCode: verifCode
+                }
+            });
+            if (user) {
+                const hashed = await bcrypt.hash(password, salt);
+                return this.usersRepository.update(
+                    {id:payload.id}, 
+                    {password: hashed, resetCode: null}
+                );
+            } throw new ForbiddenException;
         }
-        const hashed = await bcrypt.hash(password, salt);
-        return this.usersRepository.update({id:id}, {password: hashed});
+        
     }
 
 }

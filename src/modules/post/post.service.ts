@@ -2,7 +2,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { User } from 'src/entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException} from "@nestjs/common";
+import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException} from "@nestjs/common";
 import { Repository } from 'typeorm';
 import { Post } from 'src/entities/post.entity';
 
@@ -22,7 +22,12 @@ export class PostService {
     }
 
     async updatePost(user:User, id: number, updateDto: UpdatePostDto) {
-        const toUpdate = await this.postsRepository.findOne({relations: {user: true}, where: {user: user, id:id}});
+        const toUpdate = await this.postsRepository.findOne({
+            relations: {user: true}, 
+            where: {
+                user: user, id:id
+            }
+        });
         if(toUpdate) {
             return await this.postsRepository.update({id:id, user:user}, {...updateDto});
         }
@@ -30,7 +35,12 @@ export class PostService {
     }
 
     async deletePost(user: User, id: number) {
-        const toDelete = await this.postsRepository.findOne({relations: {user: true}, where: {user: user, id:id}});
+        const toDelete = await this.postsRepository.findOne({
+            relations: {user: true}, 
+            where: {
+                user: user, id:id
+            }
+        });
         if (toDelete){
             return await this.postsRepository.delete(id);
         }
@@ -44,7 +54,9 @@ export class PostService {
 
     async getPostById(id: number) {
         try {
-            return await this.postsRepository.findOne({where: {id: id}});
+            return await this.postsRepository.findOne({
+                where: {id: id}
+            });
         }catch {
             throw new NotFoundException('No posts found');
         }
@@ -52,7 +64,12 @@ export class PostService {
 
     async getPostByUser(user: User){
         try {
-            return this.postsRepository.find({relations: {user: true}, where: {user: {id: user.id}}});
+            return this.postsRepository.find({
+                relations: {user: true}, 
+                where: {
+                    user: {id: user.id}
+                }
+            });
         } catch (err) {
             throw new NotFoundException('No posts found');
         }

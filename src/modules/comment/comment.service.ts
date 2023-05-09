@@ -16,14 +16,21 @@ export class CommentService {
     async addComment(user: User, postId: number, commentDto: CreateCommentDto) {
         const post = await this.postService.getPostById(postId);
         if (post){
-            const comment = await this.commentsRepository.create({...commentDto, user: user, post: post});
+            const comment = await this.commentsRepository.create({
+                ...commentDto, user: user, post: post
+            });
             return this.commentsRepository.save(comment);
         }
         throw new NotFoundException('Post does not exist');
     }
 
     async deleteComment(userId: number, commentId: number ) {
-        const toDelete = await this.commentsRepository.findOne({relations: {user: true}, where: {user: {id:userId}, id:commentId}});
+        const toDelete = await this.commentsRepository.findOne({
+            relations: {user: true}, 
+            where: {
+                user: {id:userId}, id:commentId
+            }
+        });
         if(toDelete) {
             return await this.commentsRepository.delete(toDelete);
         }
@@ -37,11 +44,21 @@ export class CommentService {
             throw new NotFoundException(`Post with id ${postId} does not exist`);
         }
         //Return comments + number of comments
-        return await this.commentsRepository.findAndCount({relations: {post: true}, where: {post: {id: postId}}});
+        return await this.commentsRepository.findAndCount({
+            relations: {post: true}, 
+            where: {
+                post: {id: postId}
+            }
+        });
     }
 
     async getCommentByUser(userId: number) {
-        return await this.commentsRepository.find({relations: {user: true}, where: {user: {id: userId}}});
+        return await this.commentsRepository.find({
+            relations: {user: true}, 
+            where: {
+                user: {id: userId}
+            }
+        });
     }
 
     async getCommentById(id: number) {
