@@ -7,6 +7,7 @@ import { Post } from './post.entity';
 import { Comment } from './comment.entity';
 import { Exclude } from '@nestjs/class-transformer';
 import { Registration } from './event-registration.entity';
+import { Message } from './message.entity';
 
 @Entity({name: 'users'})
 export class User {
@@ -53,8 +54,8 @@ export class User {
   @Column({name:'profile_image', nullable: true})
   profileImage: string;
 
-  @Column({name: 'reset_token', nullable: true})
-  resetToken: string;
+  @Column({name: 'reset_code', nullable: true})
+  resetCode: string;
 
   @CreateDateColumn ({name: 'created_at', type: 'timestamp'})
   createdAt: Date;
@@ -64,7 +65,10 @@ export class User {
  
   //Relations
   
-  @OneToMany(() => Post, (post: Post) => post.user)
+  @OneToMany(
+    () => Post, 
+    (post: Post) => post.user
+    )
   posts: Post[];
 
   @OneToMany(
@@ -75,7 +79,8 @@ export class User {
   likes: Like[];
 
   @OneToMany(
-    type => Comment, (comment: Comment) => comment.user,
+    () => Comment, 
+    (comment: Comment) => comment.user,
     { onUpdate: 'CASCADE', onDelete: 'CASCADE' }
   )
   comments: Comment[];
@@ -85,6 +90,20 @@ export class User {
     (registration: Registration) => registration.user,
     { onDelete: 'CASCADE' },
   )
-  registrations: Like[];
+  registrations: Registration[];
+
+  @OneToMany(
+    () => SurveyResponse,
+    (response: SurveyResponse) =>response.user,
+    { onDelete: 'CASCADE' },
+  )
+  responses: SurveyResponse[];
+
+  @OneToMany(
+    () => Message,
+    (message: Message) => message.user,
+    { onUpdate: 'CASCADE', onDelete: 'CASCADE' },
+  )
+  messages: Message[];
   
 }

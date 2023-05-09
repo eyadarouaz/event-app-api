@@ -11,14 +11,18 @@ export class SurveyOption {
     @Column()
     value: string;
 
-    @ManyToOne(() => Survey,
-    (survey: Survey) => survey.options,
-    { onDelete: 'CASCADE' },)
+    @ManyToOne(
+        () => Survey,
+        (survey: Survey) => survey.options,
+        { onDelete: 'CASCADE' },
+    )
     @JoinColumn({ name: 'survey_id' })
     survey: Survey;
 
-    @OneToMany(() => SurveyResponse, 
-    (response: SurveyResponse) => response.option)
+    @OneToMany(
+        () => SurveyResponse, 
+        (response: SurveyResponse) => response.option
+    )
     responses: SurveyResponse[];
 
 
