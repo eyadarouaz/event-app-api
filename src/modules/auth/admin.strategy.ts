@@ -7,9 +7,11 @@ import { UserService } from '../user/user.service';
 import { strategies } from 'src/shared/constants';
 
 @Injectable()
-export class AdminStrategy extends PassportStrategy( Strategy, strategies.admin ) {
-  constructor(
-    private userService: UserService) {
+export class AdminStrategy extends PassportStrategy(
+  Strategy,
+  strategies.admin,
+) {
+  constructor(private userService: UserService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -19,12 +21,13 @@ export class AdminStrategy extends PassportStrategy( Strategy, strategies.admin 
 
   async validate(payload: any) {
     // Find user by id | email | etc
-    const user  = this.userService.getUserById(payload.user.id);
+    const user = this.userService.getUserById(payload.user.id);
     if (!user) {
       throw new UnauthorizedException();
-    } 
-    else {
-      if (payload.user.role != "Admin") {throw new ForbiddenException();}
+    } else {
+      if (payload.user.role != 'Admin') {
+        throw new ForbiddenException();
+      }
     }
     return user;
   }

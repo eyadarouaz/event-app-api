@@ -17,17 +17,17 @@ import { PassportModule } from '@nestjs/passport';
       secret: jwtConstant.secret,
       signOptions: {
         algorithm: 'HS512',
-        expiresIn: '1h'
-      }
+        expiresIn: '1h',
+      },
     }),
     PassportModule.register({
       defaultStrategy: 'jwt',
     }),
     UserModule,
-    ConfigModule
+    ConfigModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, AdminStrategy],
-  exports: [PassportModule, AuthService]
+  exports: [PassportModule, AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}
