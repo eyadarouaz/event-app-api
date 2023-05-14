@@ -1,8 +1,24 @@
-import { ParseIntPipe, Res,UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  ParseIntPipe,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { DateRangeDto } from './dto/date-range.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CreateEventDto } from './dto/create-event.dto';
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Request, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+  Request,
+  ValidationPipe,
+} from '@nestjs/common';
 import { EventService } from './event.service';
 import { ApiTags } from '@nestjs/swagger';
 import { strategies } from 'src/shared/constants';
@@ -22,8 +38,11 @@ export class EventController {
 
   @UseGuards(AuthGuard(strategies.admin))
   @Post()
-  async createEvent(@Body(new ValidationPipe()) eventDto: CreateEventDto) {
-    return this.eventService.createEvent(eventDto);
+  async createEvent(
+    @Body(new ValidationPipe()) eventDto: CreateEventDto,
+    @Request() req,
+  ) {
+    return this.eventService.createEvent(eventDto, req.user);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -40,11 +59,13 @@ export class EventController {
 
   @UseGuards(AuthGuard(strategies.admin))
   @Put(':id')
-  async updateEvent(@Param('id', ParseIntPipe) id: number, 
-                    @Body(new ValidationPipe()) eventDto: UpdateEventDto) {
+  async updateEvent(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ValidationPipe()) eventDto: UpdateEventDto,
+  ) {
     return this.eventService.updateEvent(eventDto, id);
   }
-  
+
   @UseGuards(AuthGuard(strategies.admin))
   @Delete(':id')
   async deleteEvent(@Param('id', ParseIntPipe) id: number) {
@@ -65,36 +86,44 @@ export class EventController {
 
   @UseGuards(AuthGuard(strategies.admin))
   @Put(':id/upload')
-  @UseInterceptors(FileInterceptor(
-    'image', 
-    {
+  @UseInterceptors(
+    FileInterceptor('image', {
       storage: diskStorage({
         destination(req, file, callback) {
-          if(!fs.existsSync('src/uploads/event-media')) mkdir('src/uploads/event-media');
+          if (!fs.existsSync('src/uploads/event-media'))
+            mkdir('src/uploads/event-media');
           callback(null, 'src/uploads/event-media');
         },
         filename(req, file, callback) {
           const name = random(15);
-          callback(null, name + '.jpg')
+          callback(null, name + '.jpg');
         },
-      })
-    }
-  ))
-  async upload(@Param('id', ParseIntPipe) id: number, @UploadedFile() file: Express.Multer.File) {
-    return this.eventService.upload(id, file.filename)
+      }),
+    }),
+  )
+  async upload(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.eventService.upload(id, file.filename);
   }
 
   @Get(':id/image')
-  async getEventImage(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    const event =  await this.eventService.getEventById(id);
-    if(event) {
+  async getEventImage(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const event = await this.eventService.getEventById(id);
+    if (event) {
       const eventImage = event.image;
-      const filePath = join(process.cwd(),'src/uploads/event-media/' + eventImage)
-      res.set({'Content-Type': 'image/jpeg'});
-      fs.readFile(filePath,
-          function (err, content) {
-              res.end(content);}
+      const filePath = join(
+        process.cwd(),
+        'src/uploads/event-media/' + eventImage,
       );
+      res.set({ 'Content-Type': 'image/jpeg' });
+      fs.readFile(filePath, function (err, content) {
+        res.end(content);
+      });
     }
   }
 
@@ -107,7 +136,6 @@ export class EventController {
   @UseGuards(AuthGuard('jwt'))
   @Put(':id/update-status')
   async updateEventsStatus() {
-    return this.eventService.updateStatus()
+    return this.eventService.updateStatus();
   }
-
 }
