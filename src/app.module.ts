@@ -11,9 +11,10 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule } from '@nestjs/config';
 import { mailerConfig } from './config/mailer.config';
 import { ormConfig } from './config/mysql.config';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
-  imports: [ 
+  imports: [
     ConfigModule.forRoot(),
     MailerModule.forRoot(mailerConfig),
     TypeOrmModule.forRoot(ormConfig),
@@ -24,8 +25,8 @@ import { ormConfig } from './config/mysql.config';
     LikeModule,
     EventModule,
     SurveyModule,
+    ChatModule,
   ],
   providers: [],
 })
 export class AppModule {}
-
