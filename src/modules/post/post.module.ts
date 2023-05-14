@@ -7,15 +7,16 @@ import { PostController } from './post.controller';
 import { Post } from 'src/entities/post.entity';
 import { PassportModule } from '@nestjs/passport';
 
-
 @Module({
-  imports: [TypeOrmModule.forFeature([Post]),
-  PassportModule.register({
-    defaultStrategy :'jwt',
-  }),
-  UserModule],
+  imports: [
+    TypeOrmModule.forFeature([Post]),
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+    }),
+    UserModule,
+  ],
   controllers: [PostController],
   providers: [PostService, JwtStrategy],
-  exports: [PostService]
+  exports: [PostService],
 })
 export class PostModule {}
