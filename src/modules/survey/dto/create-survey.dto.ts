@@ -1,18 +1,16 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { SurveyOption } from "src/entities/survey-option.entity";
+import { IsDateString, IsString } from '@nestjs/class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { SurveyOption } from 'src/entities/survey-option.entity';
 
 export class CreateSurveyDto {
+  @ApiProperty()
+  @IsString()
+  question: string;
 
-    @ApiProperty()
-    title: string;
+  @ApiProperty()
+  options: Array<SurveyOption>;
 
-    @ApiProperty()
-    question: string;
-
-    @ApiProperty()
-    options: Array<SurveyOption>;
-
-    @ApiProperty()
-    dueDate: Date;
-
+  @ApiProperty()
+  @IsDateString()
+  dueDate: Date;
 }
