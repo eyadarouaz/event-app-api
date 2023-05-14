@@ -5,12 +5,14 @@ import { EventService } from './event.service';
 import { EventController } from './event.controller';
 import { Event } from 'src/entities/event.entity';
 import { Registration } from 'src/entities/event-registration.entity';
+import { Post } from 'src/entities/post.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Event, Registration]),
-  PassportModule,
+  imports: [
+    TypeOrmModule.forFeature([Event, Registration, Post]),
+    PassportModule,
   ],
   controllers: [EventController],
-  providers: [EventService]
+  providers: [EventService],
 })
 export class EventModule {}
