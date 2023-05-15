@@ -61,7 +61,7 @@ export class AuthService {
       if (!isRefreshTokenMatching) {
         throw new UnauthorizedException('Invalid token');
       }
-      const accessToken = this.jwtService.sign({user}, {expiresIn: '900s'});
+      const accessToken = await this.jwtService.sign({user}, {expiresIn: '900s'});
       return {access_token: accessToken}
     } catch {
       throw new UnauthorizedException('Invalid');
