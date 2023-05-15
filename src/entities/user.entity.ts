@@ -63,6 +63,10 @@ export class User {
   @Column({ name: 'reset_code', nullable: true })
   resetCode: string;
 
+  @Column({ name: 'refresh_token', nullable: true })
+  @Exclude()
+  refreshToken: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
