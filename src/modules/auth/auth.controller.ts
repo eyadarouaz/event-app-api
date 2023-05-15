@@ -43,4 +43,9 @@ export class AuthController {
   verifyToken(@Body('token') token: string) {
     return this.authService.verifyToken(token);
   }
+
+  @Post('refresh')
+  refreshToken(@Body('token') token: string) {
+    return this.authService.createAccessTokenFromRefreshToken(token);
+  }
 }

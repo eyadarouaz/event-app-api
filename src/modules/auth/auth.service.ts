@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { User } from 'src/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MailerService } from '@nestjs-modules/mailer/dist';
@@ -35,11 +35,48 @@ export class AuthService {
       const isMatch = await bcrypt.compare(loginDto.password, user.password);
       if (isMatch) {
         const jwtPayload = { user };
-        return { access_token: await this.jwtService.sign(jwtPayload) };
+        const refreshToken = await this.jwtService.sign(jwtPayload, {expiresIn: '168h'});
+        const accessToken = await this.jwtService.sign(jwtPayload, {expiresIn: '900s'});
+        const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
+        this.usersRepository.update({id: user.id}, {refreshToken: hashedRefreshToken})
+        return { access_token: accessToken, refresh_token: refreshToken };
       }
     }
     throw new UnauthorizedException('Invalid credentials');
   }
+
+  async createAccessTokenFromRefreshToken (refreshToken: string) {
+    try {
+      const payload = await this.verifyToken(refreshToken)
+      if (!payload) {
+        throw new Error();
+      }
+      const user = await this.userService.getUserById(payload.user.id);
+      console.log(user)
+      if (!user) {
+        throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
+      }
+      const isRefreshTokenMatching = await bcrypt.compare(refreshToken, user.refreshToken);
+      console.log(isRefreshTokenMatching)
+      if (!isRefreshTokenMatching) {
+        throw new UnauthorizedException('Invalid token');
+      }
+      const accessToken = this.jwtService.sign({user}, {expiresIn: '900s'});
+      return {access_token: accessToken}
+    } catch {
+      throw new UnauthorizedException('Invalid');
+    }
+  }
+
+  async removeRefreshToken(login: string) {
+    const user = await this.userService.getByUsernameOrEmail(login);
+    if (!user) {
+      throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
+    }
+    return this.usersRepository.update({id: user.id}, {
+      refreshToken: null
+    });
+ }
 
   async verifyToken(token: string) {
     const payload = await this.jwtService.verify(token, {
