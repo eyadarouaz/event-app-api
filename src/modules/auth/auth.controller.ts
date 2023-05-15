@@ -6,10 +6,13 @@ import {
   Put,
   Query,
   ValidationPipe,
+  Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -47,5 +50,11 @@ export class AuthController {
   @Post('refresh')
   refreshToken(@Body('token') token: string) {
     return this.authService.createAccessTokenFromRefreshToken(token);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('logout')
+  removeRefreshToken(@Request() req) {
+    return this.authService.removeRefreshToken(req.user.username)
   }
 }
