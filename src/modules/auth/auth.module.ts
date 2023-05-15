@@ -17,7 +17,6 @@ import { PassportModule } from '@nestjs/passport';
       secret: jwtConstant.secret,
       signOptions: {
         algorithm: 'HS512',
-        expiresIn: '1h',
       },
     }),
     PassportModule.register({
