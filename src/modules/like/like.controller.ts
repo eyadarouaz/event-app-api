@@ -27,6 +27,11 @@ export class LikeController {
     return this.likeService.getLikesByPost(id);
   }
 
+  @Get(':id/getLike')
+  async getLike(@Param('id') id, @Request() req) {
+    return this.likeService.getLike(req.user.id, id);
+  }
+
   @Post(':id/like')
   async likePost(@Request() req, @Param('id', ParseIntPipe) postId: number) {
     const user = await this.userService.getUserById(req.user.id);
