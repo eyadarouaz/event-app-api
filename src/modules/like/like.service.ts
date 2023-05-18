@@ -45,6 +45,10 @@ export class LikeService {
     throw new NotFoundException('Cannot dislike');
   }
 
+  async getLikes() {
+    return this.likesRepository.find();
+  }
+
   async getLikesByPost(postId: number) {
     const post = await this.postService.getPostById(postId);
     if (!post) {

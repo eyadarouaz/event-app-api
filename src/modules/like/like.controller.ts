@@ -15,12 +15,17 @@ import { LikeService } from './like.service';
 
 @ApiTags('like')
 @UseGuards(AuthGuard())
-@Controller()
+@Controller('like')
 export class LikeController {
   constructor(
     private readonly userService: UserService,
     private readonly likeService: LikeService,
   ) {}
+
+  @Get()
+  async getLikes() {
+    return this.likeService.getLikes();
+  }
 
   @Get(':id/likes')
   async getLikesByPost(@Param('id', ParseIntPipe) id: number) {
