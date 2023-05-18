@@ -1,4 +1,5 @@
 import {
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -11,6 +12,9 @@ import { User } from './user.entity';
 export class Like {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  createdAt: Date;
 
   @ManyToOne(() => User, (user: User) => user.likes, {
     /*onUpdate: 'CASCADE',*/ onDelete: 'CASCADE',
