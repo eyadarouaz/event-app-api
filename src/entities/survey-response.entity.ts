@@ -1,10 +1,5 @@
 import { User } from 'src/entities/user.entity';
-import {
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn
-} from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { SurveyOption } from './survey-option.entity';
 
 @Entity()

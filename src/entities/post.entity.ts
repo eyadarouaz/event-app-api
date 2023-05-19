@@ -6,7 +6,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { Comment } from './comment.entity';
 import { Event } from './event.entity';

@@ -5,7 +5,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { Registration } from './event-registration.entity';
 
@@ -47,7 +47,7 @@ export class Event {
 
   //Relations
   @OneToMany(
-    (type) => Registration,
+    () => Registration,
     (registration: Registration) => registration.event,
     // {onDelete: 'CASCADE' },
   )

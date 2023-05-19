@@ -6,7 +6,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 import { Status } from './../shared/enums/status.enum';
 import { Comment } from './comment.entity';
