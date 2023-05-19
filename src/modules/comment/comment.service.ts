@@ -56,7 +56,7 @@ export class CommentService {
       throw new NotFoundException(`Post with id ${postId} does not exist`);
     }
     //Return comments + number of comments
-    return await this.commentsRepository.findAndCount({
+    return await this.commentsRepository.find({
       relations: { post: true },
       where: {
         post: { id: postId },
