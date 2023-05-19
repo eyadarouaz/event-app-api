@@ -16,7 +16,7 @@ export class ChatService {
   async getUserFromSocket(socket: Socket) {
     const token = socket.handshake.headers.authorization;
     const payload = await this.authService.verifyToken(token);
-    return await payload.user;
+    return payload.user;
   }
 
   async createMessage(content: string, user: User): Promise<Message> {
