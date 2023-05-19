@@ -1,10 +1,5 @@
-import {
-  Controller
-} from '@nestjs/common';
-import {
-  Get,
-  UseGuards
-} from '@nestjs/common/decorators';
+import { Controller } from '@nestjs/common';
+import { Get, UseGuards } from '@nestjs/common/decorators';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from 'src/modules/user/user.service';

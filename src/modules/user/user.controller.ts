@@ -95,7 +95,10 @@ export class UserController {
 
   @UseGuards(AuthGuard('jwt'))
   @Put('edit-profile')
-  async updateProfile(@Request() req, @Body(new ValidationPipe()) updateDto: UpdateProfileDto,) {
+  async updateProfile(
+    @Request() req,
+    @Body(new ValidationPipe()) updateDto: UpdateProfileDto,
+  ) {
     return this.userService.updateProfile(req.user.id, updateDto);
   }
 

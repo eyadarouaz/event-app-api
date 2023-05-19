@@ -1,5 +1,5 @@
 export enum EventStatus {
-    SCHEDULED = 'Scheduled',
-    HAPPENING = 'Happening',
-    COMPLETED = 'Completed'
+  SCHEDULED = 'Scheduled',
+  HAPPENING = 'Happening',
+  COMPLETED = 'Completed',
 }

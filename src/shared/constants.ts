@@ -4,5 +4,5 @@ export const jwtConstant = {
 
 export const salt = 10;
 export const strategies = {
-  admin: 'ADMIN' 
-}
+  admin: 'ADMIN',
+};
