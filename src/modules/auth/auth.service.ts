@@ -1,22 +1,22 @@
-import { ForbiddenException } from '@nestjs/common';
-import { LoginDto } from './dto/login.dto';
-import { Repository } from 'typeorm';
-import { UserService } from 'src/modules/user/user.service';
+import { MailerService } from '@nestjs-modules/mailer/dist';
 import {
   BadRequestException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { User } from 'src/entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { MailerService } from '@nestjs-modules/mailer/dist';
 import { ConfigService } from '@nestjs/config';
-import { salt, jwtConstant } from 'src/shared/constants';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import * as random from 'random-string-generator';
+import { User } from 'src/entities/user.entity';
+import { UserService } from 'src/modules/user/user.service';
+import { jwtConstant, salt } from 'src/shared/constants';
+import { Repository } from 'typeorm';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -35,34 +35,46 @@ export class AuthService {
       const isMatch = await bcrypt.compare(loginDto.password, user.password);
       if (isMatch) {
         const jwtPayload = { user };
-        const refreshToken = await this.jwtService.sign(jwtPayload, {expiresIn: '168h'});
-        const accessToken = await this.jwtService.sign(jwtPayload, {expiresIn: '900s'});
-        const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
-        this.usersRepository.update({id: user.id}, {refreshToken: hashedRefreshToken})
-        return { access_token: accessToken, refresh_token: refreshToken };
+        // const refreshToken = await this.jwtService.sign(jwtPayload, {expiresIn: '168h'});
+        const accessToken = await this.jwtService.sign(jwtPayload, {
+          expiresIn: '2h',
+        });
+        // const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
+        // this.usersRepository.update({id: user.id}, {refreshToken: hashedRefreshToken})
+        // return { access_token: accessToken, refresh_token: refreshToken };
+        return { access_token: accessToken };
       }
     }
     throw new UnauthorizedException('Invalid credentials');
   }
 
-  async createAccessTokenFromRefreshToken (refreshToken: string) {
+  async createAccessTokenFromRefreshToken(refreshToken: string) {
     try {
-      const payload = await this.verifyToken(refreshToken)
+      const payload = await this.verifyToken(refreshToken);
       if (!payload) {
         throw new Error();
       }
       const user = await this.userService.getUserById(payload.user.id);
-      console.log(user)
+      console.log(user);
       if (!user) {
-        throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'User with this id does not exist',
+          HttpStatus.NOT_FOUND,
+        );
       }
-      const isRefreshTokenMatching = await bcrypt.compare(refreshToken, user.refreshToken);
-      console.log(isRefreshTokenMatching)
+      const isRefreshTokenMatching = await bcrypt.compare(
+        refreshToken,
+        user.refreshToken,
+      );
+      console.log(isRefreshTokenMatching);
       if (!isRefreshTokenMatching) {
         throw new UnauthorizedException('Invalid token');
       }
-      const accessToken = await this.jwtService.sign({user}, {expiresIn: '900s'});
-      return {access_token: accessToken}
+      const accessToken = await this.jwtService.sign(
+        { user },
+        { expiresIn: '900s' },
+      );
+      return { access_token: accessToken };
     } catch {
       throw new UnauthorizedException('Invalid');
     }
@@ -71,14 +83,20 @@ export class AuthService {
   async removeRefreshToken(login: string) {
     const user = await this.userService.getByUsernameOrEmail(login);
     if (!user) {
-      throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'User with this id does not exist',
+        HttpStatus.NOT_FOUND,
+      );
     }
-    return this.usersRepository.update({id: user.id}, {
-      refreshToken: null
-    });
- }
+    return this.usersRepository.update(
+      { id: user.id },
+      {
+        refreshToken: null,
+      },
+    );
+  }
 
-  async verifyToken(token: string) {
+  async verifyToken(token: any) {
     const payload = await this.jwtService.verify(token, {
       secret: jwtConstant.secret,
     });
