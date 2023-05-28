@@ -1,18 +1,18 @@
 import {
-  Controller,
-  Post,
   Body,
-  Request,
+  Controller,
+  Delete,
+  Post,
   Put,
   Query,
-  ValidationPipe,
-  Delete,
+  Request,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -25,11 +25,7 @@ export class AuthController {
   }
 
   @Put('reset-password')
-  async resetPassword(
-    @Query() query,
-    @Body('password') password: string,
-    @Request() req,
-  ) {
+  async resetPassword(@Query() query, @Body('password') password: string) {
     return this.authService.resetPassword(
       query.token,
       query.verifCode,
@@ -55,6 +51,6 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Delete('logout')
   removeRefreshToken(@Request() req) {
-    return this.authService.removeRefreshToken(req.user.username)
+    return this.authService.removeRefreshToken(req.user.username);
   }
 }

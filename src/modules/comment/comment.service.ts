@@ -1,5 +1,3 @@
-import { PostService } from 'src/modules/post/post.service';
-import { CreateCommentDto } from './dto/create-comment.dto';
 import {
   HttpException,
   HttpStatus,
@@ -9,7 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from 'src/entities/comment.entity';
 import { User } from 'src/entities/user.entity';
+import { PostService } from 'src/modules/post/post.service';
 import { Repository } from 'typeorm';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -27,7 +27,8 @@ export class CommentService {
         user: user,
         post: post,
       });
-      return this.commentsRepository.save(comment);
+      this.commentsRepository.save(comment);
+      return comment;
     }
     throw new NotFoundException('Post does not exist');
   }
@@ -57,7 +58,7 @@ export class CommentService {
     }
     //Return comments + number of comments
     return await this.commentsRepository.find({
-      relations: { post: true },
+      relations: { post: true, user: true },
       where: {
         post: { id: postId },
       },
