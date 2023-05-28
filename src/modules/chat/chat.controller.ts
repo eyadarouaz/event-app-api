@@ -17,4 +17,10 @@ export class ChatController {
     const messages = await this.chatService.getMessages();
     res.json(messages);
   }
+
+  @Get('/api/active')
+  async activeUsers(@Res() res) {
+    const active = await this.chatService.getAllActive();
+    res.json(active);
+  }
 }
