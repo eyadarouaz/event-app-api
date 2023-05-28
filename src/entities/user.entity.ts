@@ -48,7 +48,7 @@ export class User {
     enum: Status,
     default: Status.OFFLINE,
   })
-  status: boolean;
+  status: string;
 
   @Column({
     type: 'enum',
